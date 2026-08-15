@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "MemoryOS Individual",
+  "version": "0.1.0",
+  "identifier": "local.memoryos.individual",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "MemoryOS Individual",
+        "width": 1220,
+        "height": 820
+      }
+    ]
+  }
+}

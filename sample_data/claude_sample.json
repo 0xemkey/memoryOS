@@ -1,0 +1,50 @@
+[
+  {
+    "uuid": "claude-rl-1",
+    "name": "Reinforcement learning notes",
+    "summary": "Discussion about RL for robotics",
+    "created_at": "2026-07-13T10:00:00Z",
+    "updated_at": "2026-07-13T10:01:00Z",
+    "account": "user@example.com",
+    "chat_messages": [
+      {
+        "uuid": "m1",
+        "text": "What should I remember about reinforcement learning for robotics?",
+        "content": [
+          {
+            "start_timestamp": "2026-07-13T10:00:00Z",
+            "stop_timestamp": "2026-07-13T10:00:05Z",
+            "type": "text",
+            "text": "What should I remember about reinforcement learning for robotics?",
+            "citations": []
+          }
+        ],
+        "sender": "human",
+        "created_at": "2026-07-13T10:00:00Z",
+        "updated_at": "2026-07-13T10:00:05Z",
+        "attachments": [],
+        "files": [],
+        "parent_message_uuid": null
+      },
+      {
+        "uuid": "m2",
+        "text": "Use reinforcement learning after the simulator is stable, and compare it against the PID baseline.",
+        "content": [
+          {
+            "start_timestamp": "2026-07-13T10:01:00Z",
+            "stop_timestamp": "2026-07-13T10:01:15Z",
+            "type": "text",
+            "text": "Use reinforcement learning after the simulator is stable, and compare it against the PID baseline.",
+            "citations": []
+          }
+        ],
+        "sender": "assistant",
+        "created_at": "2026-07-13T10:01:00Z",
+        "updated_at": "2026-07-13T10:01:15Z",
+        "attachments": [],
+        "files": [],
+        "parent_message_uuid": "m1"
+      }
+    ]
+  }
+]

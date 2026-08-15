@@ -1,0 +1,22 @@
+{
+  "uuid": "conv_real_claude_1",
+  "name": "Real Claude Conversation",
+  "summary": "Test conversation with real Claude export format",
+  "created_at": "2026-08-01T10:00:00Z",
+  "updated_at": "2026-08-15T15:30:00Z",
+  "account": "user@example.com",
+  "chat_messages": [
+    {
+      "uuid": "msg_001",
+      "sender": "user",
+      "text": "Hello Claude, what is reinforcement learning?",
+      "created_at": "2026-08-01T10:00:00Z"
+    },
+    {
+      "uuid": "msg_002",
+      "sender": "assistant",
+      "text": "Reinforcement learning is a machine learning paradigm where an agent learns to make decisions by receiving rewards or penalties.",
+      "created_at": "2026-08-01T10:01:00Z"
+    }
+  ]
+}

@@ -1,0 +1,78 @@
+services:
+  privacy_vault:
+    build:
+      context: ..
+      dockerfile: docker/privacy.Dockerfile
+    network_mode: "none"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    volumes:
+      - ../.memoryos_data/vault:/data/vault:rw
+      - ../.memoryos_data/raw-imports:/data/raw-imports:ro
+    environment:
+      MEMORYOS_VAULT_DB: /data/vault/vault.sqlite3
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8771/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  reasoning_service:
+    build:
+      context: ..
+      dockerfile: docker/reasoning.Dockerfile
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    volumes:
+      - ../.memoryos_data/sanitized:/data/sanitized:rw
+    environment:
+      MEMORYOS_SANITIZED_DB: /data/sanitized/sanitized.sqlite3
+      MEMORYOS_OLLAMA_BASE_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    mem_limit: 768m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8772/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  orchestrator:
+    build:
+      context: ..
+      dockerfile: docker/orchestrator.Dockerfile
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:size=32m,noexec,nosuid,nodev
+    volumes:
+      - ../.memoryos_data/normalized:/data/normalized:rw
+    ports:
+      - "127.0.0.1:8770:8770"
+    environment:
+      MEMORYOS_NORMALIZED_DB: /data/normalized/normalized.sqlite3
+    depends_on:
+      - reasoning_service
+    mem_limit: 512m
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8770/health', timeout=2)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

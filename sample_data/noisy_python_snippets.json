@@ -1,0 +1,32 @@
+{
+  "conversations": [
+    {
+      "id": "conv_python_1",
+      "title": "Python async/await patterns discussion",
+      "messages": [
+        {
+          "role": "user",
+          "content": "How do I implement async generators in Python? I need to yield values from within a coroutine."
+        },
+        {
+          "role": "assistant",
+          "content": "Use async def with yield. Here's an example:\n\nasync def async_generator():\n    for i in range(5):\n        await asyncio.sleep(1)\n        yield i\n\nasync for value in async_generator():\n    print(value)"
+        }
+      ]
+    },
+    {
+      "id": "conv_planning_notes",
+      "title": "Project planning notes",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Q4 roadmap - what should we prioritize? Consider timeline 2026-10-15 to 2026-12-31."
+        },
+        {
+          "role": "assistant",
+          "content": "Based on the Q4 schedule from 2026-10-15 onwards, prioritize: 1) API performance (deadline 2026-11-30), 2) Mobile app release (2026-12-15), 3) Documentation updates (ongoing)."
+        }
+      ]
+    }
+  ]
+}

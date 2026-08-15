@@ -1,0 +1,32 @@
+{
+ "conversation_turns": [
+  {
+   "user_turn": {
+    "prompt": "klasor kac gb",
+    "turn_index": 0,
+    "turn_last_modified": "2026-07-21T12:02:23.768319+00:00"
+   }
+  },
+  {
+   "system_turn": {
+    "text": [
+     {
+      "data": "Depolama kotasi bilgisine erisimim bulunmamaktadir."
+     }
+    ],
+    "turn_index": 1,
+    "turn_last_modified": "2026-07-21T12:02:23.768319+00:00"
+   }
+  },
+  {
+   "user_turn": {
+    "prompt": "nasil bulurum",
+    "turn_index": 2,
+    "turn_last_modified": "2026-07-21T12:02:39.051183+00:00"
+   }
+  }
+ ],
+ "creation_time": "2026-07-21T12:02:23.768319+00:00",
+ "last_modification_time": "2026-07-21T12:02:39.051183+00:00",
+ "title": "klasor kac gb"
+}

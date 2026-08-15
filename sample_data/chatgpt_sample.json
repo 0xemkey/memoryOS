@@ -1,0 +1,24 @@
+[
+  {
+    "id": "chatgpt-robot-1",
+    "title": "Robot control project",
+    "mapping": {
+      "1": {
+        "id": "1",
+        "message": {
+          "author": {"role": "user"},
+          "content": {"content_type": "text", "parts": ["We need to decide whether the robot controller should use PID or reinforcement learning."]},
+          "create_time": 1783833600
+        }
+      },
+      "2": {
+        "id": "2",
+        "message": {
+          "author": {"role": "assistant"},
+          "content": {"content_type": "text", "parts": ["Start with PID for the private beta because it is easier to tune and debug. Keep reinforcement learning as a later experiment."]},
+          "create_time": 1783833660
+        }
+      }
+    }
+  }
+]

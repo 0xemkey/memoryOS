@@ -1,0 +1,21 @@
+# Personal data - never commit
+.memoryos_data/
+chat history/
+vault.sqlite3
+*.sqlite3
+
+# Test artifacts
+.memoryos_test_cache*/
+.memoryos_test_tmp*/
+.pytest_cache/
+
+# Build artifacts
+memoryos_individual.egg-info/
+__pycache__/
+*.pyc
+node_modules/
+dist/
+build/
+
+# Environment
+.env

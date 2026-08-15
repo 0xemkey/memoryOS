@@ -1,0 +1,18 @@
+{
+  "provider": "generic_json",
+  "conversation_id": "generic-project-1",
+  "title": "MemoryOS MVP planning",
+  "messages": [
+    {
+      "role": "user",
+      "content": "The MVP must show exact conversations supporting its answer.",
+      "created_at": "2026-07-14T09:00:00Z",
+      "tags": ["citations"]
+    },
+    {
+      "role": "assistant",
+      "content": "Store raw messages, chunks, and citation metadata separately so the user can inspect evidence.",
+      "created_at": "2026-07-14T09:02:00Z"
+    }
+  ]
+}

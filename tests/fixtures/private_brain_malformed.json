@@ -1,0 +1,9 @@
+{
+  "title": "Malformed",
+  "messages": [
+    {
+      "role": "alien",
+      "content": "This should fail validation."
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+[project]
+name = "memoryos-individual"
+version = "0.1.0"
+description = "Local-first personal AI memory MVP"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "alembic>=1.13.0",
+  "cryptography>=42.0.0",
+  "fastapi>=0.111.0",
+  "keyring>=25.0.0",
+  "pydantic>=2.7.0",
+  "python-multipart>=0.0.9",
+  "requests>=2.32.0",
+  "sqlalchemy>=2.0.0",
+  "typer>=0.12.0",
+  "uvicorn[standard]>=0.30.0"
+]
+
+[project.scripts]
+memoryos = "apps.orchestrator.cli:app"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2.0",
+  "httpx>=0.27.0",
+  "PyYAML>=6.0.0"
+]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+cache_dir = ".memoryos_test_cache"
+addopts = "--basetemp=.memoryos_test_tmp"
+
+[tool.setuptools.packages.find]
+include = ["memoryos_core*", "apps*", "packages*"]
+exclude = ["sample_data*", "migrations*", "tests*", "docs*", "scripts*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
