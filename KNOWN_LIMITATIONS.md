@@ -107,5 +107,52 @@ Connections are properly closed via context managers. No known leaks.
 
 ---
 
+## 4. Dual Model Hierarchy in Import Pipeline
+
+**Status**: Documented, not code-fixed (lower priority)  
+**Severity**: Low - operational, not data-impacting  
+**Affects**: Future refactoring of `memoryos_core` and `packages/common_models` interaction
+
+### Description
+The codebase maintains two separate model hierarchies for `NormalizedConversation` and `NormalizedMessage`:
+
+**Location 1**: `memoryos_core/models.py`
+- `NormalizedConversation`: `created_at`/`updated_at` with required defaults (via `Field(default_factory=now_utc)`)
+- `NormalizedMessage`: field name `ordinal: int = 0`, `role` literal includes `"unknown"`
+- Used by: `PrivateBrainService` import pipeline (`memoryos_core.importers`), all hot-path operations
+
+**Location 2**: `packages/common_models/chat.py`
+- `NormalizedConversation`: `created_at`/`updated_at` nullable with no default
+- `NormalizedMessage`: field name `position: int` (required, no default), `role` literal excludes `"unknown"`
+- Used by: legacy code paths and external-facing schemas
+
+### Current Workaround
+`packages/chat_normalization/pipeline.py:52-57` manually translates between the two hierarchies:
+```python
+msg_data = msg.model_dump()
+if "ordinal" in msg_data:
+    msg_data["position"] = msg_data.pop("ordinal")  # Field rename
+converted_messages.append(NormalizedMessage(**msg_data))
+```
+
+This translation shim:
+- Works correctly, no data loss
+- Is non-obvious to contributors touching the import pipeline
+- Creates a hidden coupling between two model definitions
+
+### Why It Exists
+Historical artifact: `packages/common_models` was created before full pipeline consolidation. Both hierarchies remain because:
+1. `common_models` is vendored/exported as semi-stable contracts for external use
+2. `memoryos_core/models.py` is the authoritative internal model set
+3. Consolidating would require careful versioning of external APIs
+
+### Recommendation
+Not urgent. When the codebase stabilizes after first external users:
+1. Document this in contributor guidelines
+2. Consider whether `common_models` should be retained for backward compatibility or unified with `memoryos_core`
+3. If unifying: need migration strategy for any external consumers relying on `packages.common_models` exports
+
+---
+
 **Last Updated**: 2026-08-15  
 **Review Date**: After first external user feedback loop

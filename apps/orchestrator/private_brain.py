@@ -107,7 +107,8 @@ class PrivateBrainService:
 
     def list_conversations(self) -> list[dict[str, Any]]:
         self.sanitized_store.migrate()
-        with sqlite3.connect(self.config.sanitized_db) as conn:
+        conn = sqlite3.connect(self.config.sanitized_db)
+        try:
             conn.row_factory = sqlite3.Row
             return [
                 {
@@ -119,10 +120,13 @@ class PrivateBrainService:
                 }
                 for row in conn.execute("SELECT * FROM sanitized_conversations ORDER BY updated_at DESC")
             ]
+        finally:
+            conn.close()
 
     def get_conversation(self, conversation_id: str) -> dict[str, Any] | None:
         self.sanitized_store.migrate()
-        with sqlite3.connect(self.config.sanitized_db) as conn:
+        conn = sqlite3.connect(self.config.sanitized_db)
+        try:
             conn.row_factory = sqlite3.Row
             conversation = conn.execute(
                 "SELECT * FROM sanitized_conversations WHERE conversation_id=?", (conversation_id,)
@@ -133,6 +137,8 @@ class PrivateBrainService:
                 "SELECT * FROM sanitized_messages WHERE conversation_id=? ORDER BY rowid",
                 (conversation_id,),
             ).fetchall()
+        finally:
+            conn.close()
         return {
             "conversation_id": conversation["conversation_id"],
             "provider": conversation["provider"],

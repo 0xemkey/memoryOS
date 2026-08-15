@@ -39,7 +39,8 @@ class SanitizedStore:
 
     def save_package(self, package: SanitizedImportPackage) -> None:
         self.migrate()
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             for conversation in package.sanitized_conversations:
                 conn.execute(
                     """
@@ -92,6 +93,9 @@ class SanitizedStore:
                     utc_now(),
                 ),
             )
+            conn.commit()
+        finally:
+            conn.close()
 
     def raw_database_bytes(self) -> bytes:
         return self.db_path.read_bytes()
@@ -99,7 +103,8 @@ class SanitizedStore:
     def save_chunks(self, chunks: list[dict], embeddings: dict[str, list[float]] | None = None) -> None:
         self.migrate()
         embeddings = embeddings or {}
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             for chunk in chunks:
                 conn.execute(
                     """
@@ -119,6 +124,9 @@ class SanitizedStore:
                         json.dumps(embeddings.get(chunk["chunk_id"])),
                     ),
                 )
+            conn.commit()
+        finally:
+            conn.close()
 
     def search_chunks_fts(self, query: str, filters: dict, limit: int = 10) -> list[dict]:
         self.migrate()
@@ -144,9 +152,12 @@ class SanitizedStore:
         filters = filters or {}
         where, params = self._filter_sql(filters)
         sql = f"SELECT * FROM sanitized_chunks c WHERE 1=1 {where}"
-        with sqlite3.connect(self.db_path) as conn:
+        conn = sqlite3.connect(self.db_path)
+        try:
             conn.row_factory = sqlite3.Row
             return [dict(row) for row in conn.execute(sql, params)]
+        finally:
+            conn.close()
 
     def _filter_sql(self, filters: dict) -> tuple[str, list]:
         clauses = []
