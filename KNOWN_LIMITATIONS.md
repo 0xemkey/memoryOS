@@ -88,13 +88,13 @@ If processing US-date-heavy data, add validator for `/` separator format. Not ur
 
 ---
 
-## 3. Connection Pooling in SQLite Context Managers
+## 6. Connection Pooling in SQLite Context Managers
 
 **Status**: Fixed in v0.2  
 **Severity**: Was critical, now resolved  
 **Details**: See SQLITE_CONNECTION_LEAK_INVENTORY.md
 
-Connections are properly closed via context managers. No known leaks.
+Connections are properly closed via context managers. No known leaks. (This limitation was addressed during technical debt cleanup pass on 2026-08-15.)
 
 ---
 
@@ -107,11 +107,62 @@ Connections are properly closed via context managers. No known leaks.
 
 ---
 
-## 4. Dual Model Hierarchy in Import Pipeline
+## 4. Database Storage Is Plaintext On Disk (NOT Encrypted)
+
+**Status**: CRITICAL - Requires user awareness before deployment  
+**Severity**: Critical for confidentiality, not for functionality  
+**Affects**: All deployments that handle sensitive conversations
+
+### Description
+
+**MemoryOS does NOT encrypt conversation content at rest.** Raw user messages and pseudonymized content are stored in plaintext SQLite databases:
+
+- **normalized.sqlite3**: Raw user conversation content (pre-privacy-scan), stored plaintext
+- **sanitized.sqlite3**: Pseudonymized conversation content, stored plaintext (PII replaced with tokens, but surrounding text unencrypted)
+- **vault.sqlite3**: Entity mappings (actual names/emails) are encrypted with Fernet, but represents only the token-to-value map, not the bulk content
+
+### What This Means
+
+1. **Full-disk access**: If someone accesses the `.memoryos_data/` directory, they can read every conversation
+2. **Plaintext persists indefinitely**: The original raw content in normalized.sqlite3 is never automatically deleted after sanitization (only deleted via explicit `/delete-all-data` API call)
+3. **Pseudonymization ≠ Encryption**: The sanitized database tokens are deterministic and can be linked back to actual values if vault.sqlite3 is also compromised
+4. **No at-rest encryption layer**: MemoryOS does not use SQLCipher, BitLocker, FileVault, or any encryption-at-rest mechanism
+
+### Implications
+
+- Users storing MemoryOS on unencrypted disks expose their conversation history in plaintext
+- A disk forensics attack (e.g., stolen SSD, backup access) would reveal all unencrypted content
+- File permissions (Linux/Windows ACLs) are insufficient protection against determined attackers
+
+### Honest Assessment
+
+This contradicts the "privacy-first" framing for at-rest security:
+- ✅ **Privacy-first PII redaction**: Correct (names, emails tokenized)
+- ✅ **Privacy-first in-transit**: Correct (no network exposure, localhost Ollama only)
+- ❌ **Privacy-first at-rest**: INCORRECT (plaintext on disk)
+
+### Recommendation
+
+**Before deploying MemoryOS to production:**
+1. Enable full-disk encryption (BitLocker on Windows, FileVault on macOS, dm-crypt on Linux)
+2. Or: Accept that conversation content is plaintext and restrict physical access to the device
+3. Explicitly document this trade-off with your users/stakeholders
+
+### Mitigation (Already Implemented)
+- vault.sqlite3 (PII mappings) is properly encrypted
+- Secure deletion (overwrite with zeros) is used when `/delete-all-data` is called
+- Only the **surrounding conversation context** is unencrypted, not the PII itself
+
+### Future Improvement
+See `DATABASE_ENCRYPTION_AUDIT.md` for detailed findings and recommended encryption strategy (adding SQLCipher support or transparent encryption layer).
+
+---
+
+## 5. Dual Model Hierarchy in Import Pipeline
 
 **Status**: Documented, not code-fixed (lower priority)  
 **Severity**: Low - operational, not data-impacting  
-**Affects**: Future refactoring of `memoryos_core` and `packages/common_models` interaction
+**Affects**: Future refactoring of `memoryos_core` and `packages/common_models` interaction (was Item 6 in technical debt cleanup)
 
 ### Description
 The codebase maintains two separate model hierarchies for `NormalizedConversation` and `NormalizedMessage`:

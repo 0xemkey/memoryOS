@@ -2,6 +2,17 @@
 
 Your conversations and documents remain on this device. Complete setup, import your first ChatGPT export, and ask a question.
 
+## ⚠️ Privacy & Encryption Notice
+
+**Current state**: Personally Identifiable Information (names, emails, phone numbers) is encrypted and protected with your vault key (stored in your OS keychain). The surrounding conversation content is currently stored in plaintext on disk. 
+
+**Recommended protection**: If handling sensitive conversations, enable full-disk encryption on your system:
+- **Windows**: Enable BitLocker (Settings → System → About → Device Encryption)
+- **macOS**: Enable FileVault (System Settings → Privacy & Security → FileVault)
+- **Linux**: Use LUKS encryption on the partition containing `.memoryos_data/`
+
+Note: This limitation will be resolved as database encryption work lands in future releases.
+
 ## Prerequisites
 
 - **Python 3.11+** — Check: `python --version`

@@ -209,6 +209,7 @@ class PrivateBrainService:
             "retrieval_mode": "keyword_fallback",
             "reasoning_mode": "ollama_or_deterministic_fallback",
             "container_isolation": "UNVERIFIED",
+            "data_at_rest_encryption": "partial (PII encrypted, conversation content plaintext)",
             "legacy_mvp_default": self.config.use_legacy_mvp,
         }
 
