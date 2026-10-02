@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "installCommand": "cd apps/desktop && npm ci",
+  "buildCommand": "cd apps/desktop && npm run build",
+  "outputDirectory": "apps/desktop/dist",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

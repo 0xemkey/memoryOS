@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+import os
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from apps.api.memoryos_api.dependencies import embedder, reasoner, retriever, settings, store
+from apps.api.memoryos_api.history_rag_router import router as history_rag_router
 from apps.api.memoryos_api.schemas import (
     AskRequest,
     AskResponse,
@@ -20,13 +22,22 @@ from apps.api.memoryos_api.services import import_file
 from apps.orchestrator.private_brain import PrivateBrainService, get_private_brain_config
 
 app = FastAPI(title="MemoryOS Individual API", version="0.1.0")
+cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "MEMORYOS_CORS_ORIGINS",
+        "http://127.0.0.1:5173,http://localhost:5173",
+    ).split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5173", "http://localhost:5173"],
+    allow_origins=cors_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.include_router(history_rag_router)
 private_brain = PrivateBrainService()
 
 
@@ -231,6 +242,27 @@ def delete_data() -> dict:
 @app.get("/diagnostics")
 def diagnostics() -> dict:
     return private_brain.diagnostics()
+
+
+@app.get("/graph")
+def get_graph(min_edge_weight: int = 2, limit: int = 150, min_connections: int = 3) -> dict:
+    """Get the conversation-level knowledge graph.
+
+    Nodes are your chats; edges connect chats that share distinctive
+    vocabulary, computed locally via tokenization and TF-IDF-style statistics
+    (no LLM or external service involved).
+
+    Query params:
+    - min_edge_weight, limit, min_connections: accepted for API compatibility,
+      currently unused by the conversation-level builder (which caps edges
+      per node instead).
+
+    Returns: {nodes, edges, generated_at, node_count, edge_count}
+    """
+    if not use_legacy():
+        return private_brain.get_knowledge_graph(max_nodes=limit, min_edge_weight=min_edge_weight, min_node_connections=min_connections)
+    # Legacy MVP does not have graph support
+    return {"nodes": [], "edges": [], "generated_at": "", "node_count": 0, "edge_count": 0}
 
 
 @app.post("/answers/reveal")
