@@ -12,6 +12,12 @@ class ImportRequest(BaseModel):
     provider: str = "auto"
 
 
+class ImportUploadRequest(BaseModel):
+    filename: str
+    content_base64: str
+    provider: str = "auto"
+
+
 class ImportResponse(BaseModel):
     job_id: str
     imported: int

@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import base64
+import binascii
 from datetime import datetime, timezone
 import os
+import re
+import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, status
@@ -13,6 +17,7 @@ from apps.api.memoryos_api.schemas import (
     AskRequest,
     AskResponse,
     ImportRequest,
+    ImportUploadRequest,
     ImportResponse,
     SearchRequest,
     SearchResponse,
@@ -85,6 +90,42 @@ def create_import(request: ImportRequest) -> ImportResponse:
     report = import_file(path, request.provider, store, embedder)
     store.finish_import_job(job_id, report, status="failed" if report.failed and not report.imported else "completed")
     return ImportResponse(job_id=job_id, **report.model_dump())
+
+
+@app.post("/imports/upload", response_model=ImportResponse)
+def create_upload_import(request: ImportUploadRequest) -> ImportResponse:
+    """Import a user-exported chat file without exposing a server filesystem path."""
+    if len(request.content_base64) > 35 * 1024 * 1024:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="upload is limited to 25 MiB")
+    safe_name = re.sub(r"[^A-Za-z0-9._-]+", "_", Path(request.filename).name)[:120] or "chat-export.json"
+    try:
+        content = base64.b64decode(request.content_base64, validate=True)
+    except (ValueError, binascii.Error) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="content_base64 is invalid") from exc
+    if len(content) > 25 * 1024 * 1024:
+        raise HTTPException(status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE, detail="upload is limited to 25 MiB")
+    suffix = Path(safe_name).suffix or ".json"
+    with tempfile.NamedTemporaryFile(prefix="memoryos-import-", suffix=suffix, delete=False) as handle:
+        handle.write(content)
+        temp_path = Path(handle.name)
+    try:
+        if not use_legacy():
+            result = private_brain.import_file(temp_path, request.provider)
+            if result["status"] == "failed":
+                raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=result["failures"])
+            return ImportResponse(
+                job_id=result["job_id"], imported=result["imported_conversations"], skipped=0,
+                duplicated=result["skipped_duplicates"], failed=0, errors=[], conversation_ids=[],
+                stages=result["stages"], privacy_findings=result["privacy_findings"],
+                sanitized_messages=result["sanitized_messages"], quarantined_messages=result["quarantined_messages"],
+                chunks_indexed=result["chunks_indexed"],
+            )
+        job_id = store.create_import_job(request.provider, safe_name)
+        report = import_file(temp_path, request.provider, store, embedder)
+        store.finish_import_job(job_id, report, status="failed" if report.failed and not report.imported else "completed")
+        return ImportResponse(job_id=job_id, **report.model_dump())
+    finally:
+        temp_path.unlink(missing_ok=True)
 
 
 @app.get("/imports/{job_id}")
